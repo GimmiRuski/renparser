@@ -1,0 +1,48 @@
+start: script
+
+script: (label_statement)+
+
+label_statement: "label" LABEL_NAME ":" _NEWLINE _INDENT label_block _DEDENT
+label_block: (logic_statement)+
+
+logic_statement: jump_statement
+               | menu_statement
+               | play_statement
+               | return_statement
+               | say_statement
+               | scene_statement
+               | show_statement
+               | with_statement
+
+jump_statement: "jump" LABEL_NAME _NEWLINE
+
+menu_statement: "menu" [MENU_NAME] ":" _NEWLINE _INDENT menu_block _DEDENT
+menu_block: [[speaker] DIALOGUE_LINE _NEWLINE] (menu_choice)+ // [say_statement] should work but doesn't.
+menu_choice: STRING ":" _NEWLINE _INDENT menu_choice_block _DEDENT
+menu_choice_block: (logic_statement)+
+
+play_statement: "play" CHANNEL STRING _NEWLINE
+return_statement: "return" _NEWLINE
+say_statement: [speaker] DIALOGUE_LINE _NEWLINE
+scene_statement: "scene" (IMAGE)+ _NEWLINE
+show_statement: "show" (IMAGE)+ _NEWLINE
+with_statement: "with" TRANSITION _NEWLINE
+
+speaker: CHARACTER
+       | STRING
+
+_NEWLINE: /(\n[ ]*)+/
+CHANNEL: NAME
+CHARACTER: NAME
+DIALOGUE_LINE: STRING
+IMAGE: NAME
+LABEL_NAME: NAME
+MENU_NAME: NAME
+NAME: /[_a-zA-Z0-9]+/
+SPACE: " "
+SPACES: SPACE+
+TRANSITION: NAME
+
+%declare _INDENT _DEDENT
+%import common.ESCAPED_STRING -> STRING
+%ignore SPACES

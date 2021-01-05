@@ -20,6 +20,9 @@ isort = "^5.7.0"
 pylint = "^2.6.0"
 pytest = "^4.6"
 
+[tool.poetry.scripts]
+renparser = 'renparser.renparser:main'
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
