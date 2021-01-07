@@ -1,25 +1,31 @@
 start: script
 
-script: label_statement+
+script: (default_statement | define_statement | label_statement)+
+
+default_statement: "default" /.+/ _NEWLINE
+define_statement: "define" /.+/ _NEWLINE
 
 label_statement: "label" LABEL_NAME ":" _NEWLINE _INDENT label_block _DEDENT
-label_block: logic_statement+
+label_block: label_logic_statement+
+label_logic_statement: if_statement
+                     | inline_python_statement
+                     | jump_statement
+                     | menu_statement
+                     | play_statement
+                     | return_statement
+                     | say_statement
+                     | scene_statement
+                     | show_statement
+                     | with_statement
 
-logic_statement: jump_statement
-               | menu_statement
-               | play_statement
-               | return_statement
-               | say_statement
-               | scene_statement
-               | show_statement
-               | with_statement
-
+if_statement: "if" CONDITION ":" _NEWLINE _INDENT label_block _DEDENT
+inline_python_statement: "$" /.+/ _NEWLINE
 jump_statement: "jump" LABEL_NAME _NEWLINE
 
 menu_statement: "menu" MENU_NAME? ":" _NEWLINE _INDENT menu_block _DEDENT
 menu_block: [speaker? DIALOGUE_LINE _NEWLINE] menu_choice+ // [say_statement] should work but doesn't.
 menu_choice: STRING ":" _NEWLINE _INDENT menu_choice_block _DEDENT
-menu_choice_block: logic_statement+
+menu_choice_block: label_logic_statement+
 
 play_statement: "play" CHANNEL STRING _NEWLINE
 return_statement: "return" _NEWLINE
@@ -34,6 +40,8 @@ speaker: CHARACTER
 _NEWLINE: /(\n[ ]*)+/
 CHANNEL: NAME
 CHARACTER: NAME
+COMMENT: /#.*\n/
+CONDITION: NAME
 DIALOGUE_LINE: STRING
 IMAGE: NAME
 LABEL_NAME: NAME
@@ -42,7 +50,9 @@ NAME: /[_a-zA-Z0-9]+/
 SPACE: " "
 SPACES: SPACE+
 TRANSITION: NAME
+VARIABLE: NAME
 
 %declare _INDENT _DEDENT
 %import common.ESCAPED_STRING -> STRING
+%ignore COMMENT
 %ignore SPACES
