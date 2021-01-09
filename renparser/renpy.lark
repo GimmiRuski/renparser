@@ -1,56 +1,77 @@
 start: script
 
-script: (default_statement | define_statement | label_statement)+
+script: (default_statement | define_statement | label_statement)*
 
 default_statement: "default" /.+/ _NEWLINE
 define_statement: "define" /.+/ _NEWLINE
 
-label_statement: "label" LABEL_NAME ":" _NEWLINE _INDENT label_block _DEDENT
+label_statement: "label" NAME ":" _NEWLINE _INDENT label_block _DEDENT
 label_block: label_logic_statement+
-label_logic_statement: if_statement
+label_logic_statement: call_statement
+                     | hide_statement
+                     | if_statement
                      | inline_python_statement
                      | jump_statement
                      | menu_statement
+                     | pause_statement
+                     | pass_statement
                      | play_statement
                      | return_statement
                      | say_statement
                      | scene_statement
                      | show_statement
+                     | stop_statement
+                     | window_statement
                      | with_statement
 
-if_statement: "if" CONDITION ":" _NEWLINE _INDENT label_block _DEDENT
-inline_python_statement: "$" /.+/ _NEWLINE
-jump_statement: "jump" LABEL_NAME _NEWLINE
+pause_statement: "pause" _NEWLINE
+window_statement: "window" ("hide" | "show") _NEWLINE
 
-menu_statement: "menu" MENU_NAME? ":" _NEWLINE _INDENT menu_block _DEDENT
-menu_block: [speaker? DIALOGUE_LINE _NEWLINE] menu_choice+ // [say_statement] should work but doesn't.
+// Audio
+audio_fading: FADING FLOAT
+audio_item: (NAME | STRING)
+play_statement: "play" NAME audio_item audio_fading* _NEWLINE
+stop_statement: "stop" NAME audio_fading* _NEWLINE
+
+// Dialogue
+say_statement: (say_statement_character | say_statement_narration | say_statement_string)
+say_statement_character: NAME "@"? NAME* STRING _NEWLINE
+say_statement_narration: STRING _NEWLINE
+say_statement_string: STRING STRING _NEWLINE
+
+// Flow control
+call_statement: "call" NAME _NEWLINE
+else_statement: "else" ":" _NEWLINE _INDENT label_block _DEDENT
+if_statement: "if" CONDITION ":" _NEWLINE _INDENT label_block _DEDENT else_statement?
+jump_statement: "jump" NAME _NEWLINE
+pass_statement: "pass" _NEWLINE
+return_statement: "return" _NEWLINE
+
+// Menu
+menu_statement: "menu" NAME? ":" _NEWLINE _INDENT menu_block _DEDENT
+menu_block: say_statement? menu_choice+
 menu_choice: STRING ":" _NEWLINE _INDENT menu_choice_block _DEDENT
 menu_choice_block: label_logic_statement+
 
-play_statement: "play" CHANNEL STRING _NEWLINE
-return_statement: "return" _NEWLINE
-say_statement: speaker? DIALOGUE_LINE _NEWLINE
-scene_statement: "scene" IMAGE+ _NEWLINE
-show_statement: "show" IMAGE+ _NEWLINE
-with_statement: "with" TRANSITION _NEWLINE
+// Python
+inline_python_statement: "$" /.+/ _NEWLINE
 
-speaker: CHARACTER
-       | STRING
+// Visual
+hide_statement: "hide" NAME (_NEWLINE | with_statement)
+scene_statement: "scene" NAME+ (_NEWLINE | with_statement)
+show_statement: "show" NAME+ (_NEWLINE | with_statement)
+with_statement: "with" NAME _NEWLINE
+
+COMMENT: /#.*\n/
+CONDITION: NAME ("." NAME)?
+FADING: ("fadein" | "fadeout")
+NAME: /[_a-zA-Z0-9]+/
 
 _NEWLINE: /(\n[ ]*)+/
-CHANNEL: NAME
-CHARACTER: NAME
-COMMENT: /#.*\n/
-CONDITION: NAME
-DIALOGUE_LINE: STRING
-IMAGE: NAME
-LABEL_NAME: NAME
-MENU_NAME: NAME
-NAME: /[_a-zA-Z0-9]+/
+DIGIT: "0".."9"
+FLOAT: DIGIT "." DIGIT
 SPACE: " "
 SPACES: SPACE+
-TRANSITION: NAME
-VARIABLE: NAME
 
 %declare _INDENT _DEDENT
 %import common.ESCAPED_STRING -> STRING
