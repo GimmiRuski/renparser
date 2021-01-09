@@ -28,7 +28,7 @@ pause_statement: "pause" _NEWLINE
 window_statement: "window" ("hide" | "show") _NEWLINE
 
 // Audio
-audio_fading: FADING FLOAT
+audio_fading: FADE FLOAT
 audio_item: (NAME | STRING)
 play_statement: "play" NAME audio_item audio_fading* _NEWLINE
 stop_statement: "stop" NAME audio_fading* _NEWLINE
@@ -64,7 +64,7 @@ with_statement: "with" NAME _NEWLINE
 
 COMMENT: /#.*\n/
 CONDITION: NAME ("." NAME)?
-FADING: ("fadein" | "fadeout")
+FADE: ("fadein" | "fadeout")
 NAME: /[_a-zA-Z0-9]+/
 
 _NEWLINE: /(\n[ ]*)+/
