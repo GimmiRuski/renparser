@@ -1,6 +1,6 @@
 start: script
 
-script: (default_statement | define_statement | label_statement)*
+script: (default_statement | define_statement | label_statement | python_block_statement)*
 
 default_statement: "default" /.+/ _NEWLINE
 define_statement: "define" /.+/ _NEWLINE
@@ -55,7 +55,7 @@ menu_choice_block: label_logic_statement+
 
 // Python
 inline_python_statement: "$" /.+/ _NEWLINE
-python_block_statement: "python" ":" _NEWLINE _INDENT python_block_line+ _DEDENT
+python_block_statement: "init"? INTEGER? "python" ["in" NAME] ":" _NEWLINE _INDENT python_block_line+ _DEDENT
 python_block_line: /.+/ _NEWLINE [_INDENT python_block_line+ _DEDENT]
 
 // Visual
